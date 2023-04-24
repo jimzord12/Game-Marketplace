@@ -1,3 +1,5 @@
+import { IoEllipsisHorizontalCircleSharp } from "react-icons/io5";
+
 // import axiosPublic from "./api";
 export const getAllCardsForSale = async ({ queryKey }) => {
   const endpoint = "cards/marketplace";
@@ -27,18 +29,19 @@ export const purchaseCard = async ({ queryKey }) => {
   return response.data;
 };
 
-export const deletePurchase = async ({ queryKey }) => {
+export const deletePurchase = async ({ axiosPrivate, cardId }) => {
   const endpoint = "marketplace";
-  const [, axiosPrivate, sellerId] = queryKey;
-
-  console.log("DELETE (Purchase Events Entry)");
-  const response = await axiosPrivate.delete(`/${endpoint}/${sellerId}`);
+  // const [, axiosPrivate, sellerId] = queryKey;
+  console.log("DELETE (Purchase Events Entry): ", cardId);
+  const response = await axiosPrivate.delete(`/${endpoint}`, {
+    data: { cardId },
+  });
   return response.data;
 };
 
-export const removeFromMP = async ({ queryKey }) => {
+export const removeFromMP = async ({ axiosPrivate, cardId }) => {
   const endpoint = "cards";
-  const [, axiosPrivate, cardId] = queryKey;
+  // const [, axiosPrivate, cardId] = queryKey;
 
   console.log("DELETE (Purchase Events Entry)");
   const response = await axiosPrivate.put(`/${endpoint}/${cardId}`, {

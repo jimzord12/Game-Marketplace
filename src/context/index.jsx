@@ -6,7 +6,12 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import useAuth from "../hooks/useAuth";
 import axios from "../api/api";
 import useAxiosPrivate from "../hooks/useAxiosPrivate";
-import { getAllCardsForSale, getAllPlayers, getSoldCards } from "../api/apiFns";
+import {
+  getAllCardsForSale,
+  getAllPlayers,
+  getSoldCards,
+  deletePurchase,
+} from "../api/apiFns";
 // import WalletAvatar from "../components/WalletAvatar";
 
 const LOGIN_URL = "/authNoPwd"; //@Get it from Main App! ✨
@@ -130,12 +135,13 @@ export const StateContextProvider = ({ children }) => {
   const {
     isSuccess: isSoldCardsSuccess,
     isLoading: isLoadingSoldCards,
-    // isError,
+    refetch: refetchSoldCards,
+    isError: isErrorSoldCards,
     // error,
-    // refetch,
   } = useQuery({
     queryKey: ["playerSoldCards", axiosPrivate, userId],
     queryFn: getSoldCards,
+    retry: 0,
     enabled: isSuccessPlayers && players.length > 0,
     onSuccess: (fetchedData) => {
       console.log(
@@ -145,7 +151,21 @@ export const StateContextProvider = ({ children }) => {
       //   setUserSoldCards(findSoldCards(playerCards, fetchedData));
       setUserSoldCards(fetchedData);
     },
+    onError: (error) => {
+      setUserSoldCards([]);
+    },
   });
+
+  const { mutate: removePurchaseEvent, isSuccess: hasCards4Sale } = useMutation(
+    {
+      mutationFn: deletePurchase,
+      onSuccess: (data) => {
+        console.log("3 - Success - DELETE: ", data);
+        refetchSoldCards();
+      },
+    }
+  );
+  console.log("hhhhhhhh: ", removePurchaseEvent);
 
   return (
     <StateContext.Provider
@@ -169,9 +189,13 @@ export const StateContextProvider = ({ children }) => {
         axiosPrivate,
         refetch,
         userSoldCards,
+        refetchSoldCards,
         isLoadingSoldCards,
         setIsActive,
         isActive,
+        removePurchaseEvent,
+        hasCards4Sale,
+        isErrorSoldCards,
       }}
     >
       <>

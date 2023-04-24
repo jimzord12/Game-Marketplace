@@ -176,6 +176,7 @@ const CardDetails = () => {
     refetch,
     playerBalance,
     setPlayerBalance,
+    refetchSoldCards,
   } = useStateContext();
   console.log("1 - State: ", state);
   const [isLoading, setIsLoading] = useState(false);
@@ -223,8 +224,10 @@ const CardDetails = () => {
     onSuccess: (fetchedData) => {
       console.log("SUCCESSFUL - Created Purchase (Marketplace): ", fetchedData);
       setTranType("success");
+      removeFromMP({ axiosPrivate, cardId: selectedCard.id });
       setTimeout(() => {
         setPlayerBalance((prev) => prev - selectedCard.priceTag);
+        refetchSoldCards();
         refetch();
         navigate("/");
         smoothScrollTo(0, 500);
@@ -233,24 +236,6 @@ const CardDetails = () => {
     onError: (error) => {
       console.log("--- FAILED ---- Created Purchase (Marketplace): ", error);
       setTranType("failed");
-    },
-  });
-
-  const {
-    isSuccess: isRemovalSuccess,
-    isFetching: isRemovalLoading,
-    isError: isRemovalError,
-    error: removalError,
-  } = useQuery({
-    queryKey: ["removeCard", axiosPrivate, selectedCard?.id],
-    queryFn: removeFromMP,
-    enabled: isTranSuccess && !!selectedCard.id,
-    onSuccess: (fetchedData) => {
-      console.log("SUCCESSFUL - Removed Card (Marketplace): ", fetchedData);
-    },
-    onError: (error) => {
-      console.log("--- FAILED ---- Removed Card (Marketplace): ", error);
-      // setTranType("failed");
     },
   });
 

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 import FundCard from "./FundCard";
@@ -10,6 +10,8 @@ const DisplayCards = ({
   cards,
   playerAvatar,
   from = "not-withdraw",
+  isSuccess,
+  isErrorSoldCards,
 }) => {
   const navigate = useNavigate();
 
@@ -17,6 +19,9 @@ const DisplayCards = ({
     console.log("Displaying Cards: ", card.priceTag);
     navigate(`/card-details/${card.id}`, { state: card });
   };
+  useEffect(() => {
+    console.log("Re-render plz!");
+  }, [isSuccess, isErrorSoldCards]);
 
   return (
     <div>

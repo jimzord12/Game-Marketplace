@@ -1,4 +1,5 @@
 import React from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { tagType, thirdweb } from "../assets";
 import { useStateContext } from "../context";
@@ -14,13 +15,29 @@ import { numberWithDots, findOwnerWallet } from "../utils";
 import styles from "./styles/FundCard.module.css";
 import WalletAvatar from "./WalletAvatar";
 import SimpleLoader from "./SimpleLoader";
+// import { deletePurchase } from "../api/apiFns";
 
 //@Note: Need to get all the PLayers as well to map ownerID to ownerName or Wallet
 const FundCard = ({ card, handleClick, playerAvatar, from }) => {
-  const { playersMapping, players, isSuccessPlayers } = useStateContext();
+  const {
+    playersMapping,
+    players,
+    isSuccessPlayers,
+    axiosPrivate,
+    refetchSoldCards,
+    removePurchaseEvent,
+  } = useStateContext();
   const cardDetails = cardInfo[card.templateId];
-  // console.log("1 - FundCard Card: ", card);
-  // console.log("2 - FundCard cardDetails: ", cardDetails);
+  console.log("1 - FundCard Card: ", card);
+  console.log("2 - FundCard cardDetails: ", cardDetails);
+
+  // const removePurchaseEvent = useMutation({
+  //   mutationFn: deletePurchase,
+  //   onSuccess: (data) => {
+  //     console.log("3 - Success - DELETE: ", data);
+  //     refetchSoldCards();
+  //   },
+  // });
 
   // Mini Util functions
   function iconFinder(type) {
@@ -55,7 +72,7 @@ const FundCard = ({ card, handleClick, playerAvatar, from }) => {
       // }}
       className={`${hoverStyles} ${
         styles[cardRarity.text]
-      } sm:w-[288px] w-full rounded-[15px] bg-[#1c1c24] `}
+      } w-[288px] rounded-[15px] bg-[#1c1c24]`}
       onClick={() =>
         from === "withdraw"
           ? console.log("(FundCard) - Do Nothing")
@@ -157,7 +174,10 @@ const FundCard = ({ card, handleClick, playerAvatar, from }) => {
                 styles="w-[62%] bg-[#8c6dfd]"
                 // disabled={!canBuy}
                 handleClick={() =>
-                  console.log("Giving you the Gold from the card")
+                  removePurchaseEvent({
+                    axiosPrivate,
+                    cardId: card.cardId,
+                  })
                 }
               />
             )}
