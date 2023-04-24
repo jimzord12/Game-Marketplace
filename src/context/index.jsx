@@ -33,12 +33,16 @@ export const StateContextProvider = ({ children }) => {
   const [players, setPlayers] = useState([]); //@Get it from Main App! ✨
   const [playersMapping, setPlayersMapping] = useState({});
   const [userSoldCards, setUserSoldCards] = useState([]);
+  const [playerBalance, setPlayerBalance] = useState(500000);
+  const [isActive, setIsActive] = useState("dashboard");
 
   //@Get it from Main App! ✨
   const axiosPrivate = useAxiosPrivate();
 
   //@Get it from Main App! ✨
-  const playerWallet = "0x9ba3DaC17C4286Fd32572A6d75203598C1c8C27E";
+  const playerWallet = "0x9ba3DaC17C4286Fd11133A6d75203598C1c8C84E";
+  const testingPlayerName = "test 2";
+  // const testingPlayerName = "the collector"
 
   // #1 - Query - Resolving Authentication
   //@Get it from Main App! ✨
@@ -50,10 +54,14 @@ export const StateContextProvider = ({ children }) => {
   } = useQuery({
     queryKey: ["authentication"],
     queryFn: async () => {
-      return axios.post(LOGIN_URL, JSON.stringify({ name: "test 2" }), {
-        headers: { "Content-Type": "application/json" },
-        withCredentials: true,
-      });
+      return axios.post(
+        LOGIN_URL,
+        JSON.stringify({ name: testingPlayerName }),
+        {
+          headers: { "Content-Type": "application/json" },
+          withCredentials: true,
+        }
+      );
 
       // Return the response data as the query result
       // return response.data;
@@ -66,7 +74,7 @@ export const StateContextProvider = ({ children }) => {
       console.log("🤩 Got A-JWT from Web Server! Yay! 🤩");
       // console.log("Access Token: ", accessToken);
       setAuth((prev) => {
-        return { ...prev, user: "test 2", accessToken };
+        return { ...prev, user: testingPlayerName, accessToken };
       });
     },
     onError: (error) => {
@@ -120,7 +128,7 @@ export const StateContextProvider = ({ children }) => {
   });
 
   const {
-    isSuccess,
+    isSuccess: isSoldCardsSuccess,
     isLoading: isLoadingSoldCards,
     // isError,
     // error,
@@ -128,7 +136,7 @@ export const StateContextProvider = ({ children }) => {
   } = useQuery({
     queryKey: ["playerSoldCards", axiosPrivate, userId],
     queryFn: getSoldCards,
-    enabled: isSuccessPlayers && playerCards.length > 0,
+    enabled: isSuccessPlayers && players.length > 0,
     onSuccess: (fetchedData) => {
       console.log(
         "SUCCESSFUL - Got Purchase Events (Marketplace): ",
@@ -153,12 +161,17 @@ export const StateContextProvider = ({ children }) => {
         userId,
         players,
         playersMapping,
+        setPlayerBalance,
+        playerBalance,
         isSuccessPlayers,
+        isSoldCardsSuccess,
         playerWallet,
         axiosPrivate,
         refetch,
         userSoldCards,
         isLoadingSoldCards,
+        setIsActive,
+        isActive,
       }}
     >
       <>

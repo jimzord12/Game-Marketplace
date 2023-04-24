@@ -10,13 +10,14 @@ import { FaStar, FaGem } from "react-icons/fa";
 import { BsFillBuildingsFill } from "react-icons/bs";
 import { GiCrownCoin, GiStarFormation } from "react-icons/gi";
 import { MdEnergySavingsLeaf } from "react-icons/md";
-import { numberWithDots } from "../utils";
+import { numberWithDots, findOwnerWallet } from "../utils";
 import styles from "./styles/FundCard.module.css";
 import WalletAvatar from "./WalletAvatar";
+import SimpleLoader from "./SimpleLoader";
 
 //@Note: Need to get all the PLayers as well to map ownerID to ownerName or Wallet
 const FundCard = ({ card, handleClick, playerAvatar, from }) => {
-  const { playersMapping, playerWallet } = useStateContext();
+  const { playersMapping, players, isSuccessPlayers } = useStateContext();
   const cardDetails = cardInfo[card.templateId];
   // console.log("1 - FundCard Card: ", card);
   // console.log("2 - FundCard cardDetails: ", cardDetails);
@@ -134,7 +135,13 @@ const FundCard = ({ card, handleClick, playerAvatar, from }) => {
               alt="user"
               className="w-1/2 h-1/2 object-contain"
             /> */}
-                  <WalletAvatar walletAddress={playerWallet} />
+                  {isSuccessPlayers && players.length > 0 ? (
+                    <WalletAvatar
+                      walletAddress={findOwnerWallet(card, players)}
+                    />
+                  ) : (
+                    <SimpleLoader />
+                  )}
                 </div>
                 <p className="flex-1 justify-between font-epilogue font-normal text-[14px] text-[#808191] truncate">
                   from:{" "}

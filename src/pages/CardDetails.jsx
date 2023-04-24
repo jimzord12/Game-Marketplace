@@ -23,13 +23,14 @@ import {
   formatDate,
   smoothScrollTo,
   rarityCoverter,
+  findOwnerWallet,
 } from "../utils";
 import cardClass from "../classes/classCard_V2";
 import templateData from "../classes/testCardTemplateData.json";
 import { thirdweb } from "../assets";
 import WalletAvatar from "../components/WalletAvatar";
 import { cardInfo as cardDesc } from "../constants";
-import { createPurchase, removeFromMP } from "../api/apiFns";
+import { purchaseCard, removeFromMP, ownersSwapper } from "../api/apiFns";
 
 const SubCategories = ({ cardProps, isSp }) => {
   console.log("cardProps: ", cardProps);
@@ -166,14 +167,21 @@ const Message = ({
 const CardDetails = () => {
   const { state } = useLocation(); // Card's Data
   const navigate = useNavigate();
-  const { playersMapping, playerWallet, userId, axiosPrivate, refetch } =
-    useStateContext();
+  const {
+    playersMapping,
+    playerWallet,
+    players,
+    userId,
+    axiosPrivate,
+    refetch,
+    playerBalance,
+    setPlayerBalance,
+  } = useStateContext();
   console.log("1 - State: ", state);
   const [isLoading, setIsLoading] = useState(false);
   const [amount, setAmount] = useState("");
   const [donators, setDonators] = useState([]);
   const [selectedCard, setSelectedCard] = useState(null);
-  const [playerBalance, setPlayerBalance] = useState(null);
   const [canBuy, setCanBuy] = useState(false);
 
   // Transaction States
@@ -210,16 +218,17 @@ const CardDetails = () => {
         level: selectedCard?.level,
       },
     ],
-    queryFn: createPurchase,
+    queryFn: purchaseCard,
     enabled: beginTransaction && !!selectedCard.id,
     onSuccess: (fetchedData) => {
       console.log("SUCCESSFUL - Created Purchase (Marketplace): ", fetchedData);
       setTranType("success");
       setTimeout(() => {
+        setPlayerBalance((prev) => prev - selectedCard.priceTag);
         refetch();
         navigate("/");
         smoothScrollTo(0, 500);
-      }, 2500);
+      }, 3000);
     },
     onError: (error) => {
       console.log("--- FAILED ---- Created Purchase (Marketplace): ", error);
@@ -245,12 +254,34 @@ const CardDetails = () => {
     },
   });
 
+  const {
+    isSuccess: isSuccessOwnerSwap,
+    isFetching: isOwnerSwap,
+    isError: isOwnerSwapError,
+    error: ownerSwapError,
+  } = useQuery({
+    queryKey: [
+      "swapOwners",
+      axiosPrivate,
+      { cardId: selectedCard?.id, buyerId: userId },
+    ],
+    queryFn: ownersSwapper,
+    enabled: isTranSuccess && !!selectedCard.id,
+    onSuccess: (fetchedData) => {
+      console.log("SUCCESSFUL - Swapped Owners (Marketplace): ", fetchedData);
+    },
+    onError: (error) => {
+      console.log("--- FAILED ---- Swapped Owners (Marketplace): ", error);
+      // setTranType("failed");
+    },
+  });
+
   // @Note: Here use the classCard_V2 to calc the Card's Stats
   useEffect(() => {
     console.log("UseEffect, State: ", state);
     console.log("UseEffect, Template Data: ", templateData);
     setSelectedCard(new cardClass(state, templateData[state.templateId]));
-    setPlayerBalance(500000);
+    // setPlayerBalance(500000);
     setInitFlag(true);
     // setCanBuy(playerBalance - selectedCard.priceTag < 0 ? false : true);
   }, []);
@@ -278,10 +309,10 @@ const CardDetails = () => {
 
   return (
     <div>
-      {isLoading && initFlag === null && <Loader />}
+      {isLoading && initFlag === false && <Loader />}
 
       {/* <div className="w-full flex flex-col mt-10 gap-[30px]"> */}
-      {initFlag !== null && (
+      {initFlag && (
         <div className="w-full flex md:flex-row flex-col mt-10 gap-[30px]">
           <div className="flex-1 flex-col">
             <img
@@ -320,7 +351,7 @@ const CardDetails = () => {
         </div>
       )}
 
-      {initFlag !== null && (
+      {initFlag && (
         <div className="mt-[60px] flex lg:flex-row flex-col gap-5">
           <div className="flex-[2] flex flex-col gap-[40px]">
             <div className="flex flex-col w-full mt-0">
@@ -424,7 +455,10 @@ const CardDetails = () => {
                     alt="user"
                     className="w-[60%] h-[60%] object-contain"
                   /> */}
-                  <WalletAvatar walletAddress={playerWallet} scale={4} />
+                  <WalletAvatar
+                    walletAddress={findOwnerWallet(selectedCard, players)}
+                    scale={4}
+                  />
                 </div>
                 <div>
                   <h4 className="font-epilogue font-semibold text-[18px] text-white break-all">

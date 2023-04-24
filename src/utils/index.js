@@ -98,3 +98,11 @@ export function getSoldCards(playerCards, soldCardsIds) {
   console.log("getSoldCards: ", soldCards);
   return soldCards;
 }
+
+export function findOwnerWallet(card, playersArr) {
+  const ownerWallet = playersArr.find(
+    (player) => card.ownerId === player.id
+  ).wallet;
+  console.log(`Card ID: ${card.id} | Owner Address: ${ownerWallet}`);
+  return ownerWallet;
+}

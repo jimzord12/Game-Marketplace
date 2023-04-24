@@ -17,12 +17,13 @@ export const getAllPlayers = async ({ queryKey }) => {
   return response.data;
 };
 
-export const createPurchase = async ({ queryKey }) => {
+export const purchaseCard = async ({ queryKey }) => {
   const endpoint = "marketplace";
   console.log("POST (Create Purchase Event Entry Marketplace): ", queryKey);
-  const [queryId, axiosPrivate, queryProps] = queryKey;
+  const [, axiosPrivate, queryProps] = queryKey;
 
   const response = await axiosPrivate.post(`/${endpoint}`, queryProps);
+
   return response.data;
 };
 
@@ -43,6 +44,20 @@ export const removeFromMP = async ({ queryKey }) => {
   const response = await axiosPrivate.put(`/${endpoint}/${cardId}`, {
     in_mp: false,
   });
+  return response.data;
+};
+
+export const ownersSwapper = async ({ queryKey }) => {
+  const purchaseEndpoint = "marketplace";
+  const ownerSwapEndpoint = "cards";
+  console.log("PUT (ALSO - Swap Owners - Marketplace)");
+  const [, axiosPrivate, queryProps] = queryKey;
+  const { cardId, buyerId: ownerId } = queryProps;
+
+  const response = await axiosPrivate.put(
+    `/${ownerSwapEndpoint}/${purchaseEndpoint}/${cardId}`,
+    { ownerId }
+  );
   return response.data;
 };
 

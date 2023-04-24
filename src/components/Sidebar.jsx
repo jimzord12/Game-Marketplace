@@ -27,14 +27,14 @@ const Icon = ({ styles, name, imgUrl, isActive, disabled, handleClick }) => (
 );
 
 const Sidebar = () => {
-  const { userSoldCards } = useStateContext();
+  const { userSoldCards, isActive, setIsActive } = useStateContext();
   const navigate = useNavigate();
-  const [isActive, setIsActive] = useState("dashboard");
+  // const [isActive, setIsActive] = useState("dashboard");
   const hasSoldCards = true;
 
   return (
     <div className="flex justify-between items-center flex-col sticky top-5 h-[93vh]">
-      <Link to="/">
+      <Link to="/" onClick={() => setIsActive("dashboard")}>
         <Icon styles="w-[52px] h-[52px] bg-[#2c2f32]" imgUrl={logo} />
       </Link>
 
