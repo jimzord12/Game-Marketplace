@@ -1,13 +1,18 @@
+import { AxiosError } from "axios";
 import { IoEllipsisHorizontalCircleSharp } from "react-icons/io5";
 
 // import axiosPublic from "./api";
 export const getAllCardsForSale = async ({ queryKey }) => {
   const endpoint = "cards/marketplace";
   console.log("GET (All Cards for Sale) queryKey: ", queryKey);
-  const [, axiosPrivate] = queryKey;
 
-  const response = await axiosPrivate.get(`/${endpoint}`);
-  return response.data;
+  const [, axiosPrivate] = queryKey;
+  try {
+    const response = await axiosPrivate.get(`/${endpoint}`);
+    return response.data;
+  } catch (error) {
+    console.log("Cautch the bastard!");
+  }
 };
 
 export const getAllPlayers = async ({ queryKey }) => {

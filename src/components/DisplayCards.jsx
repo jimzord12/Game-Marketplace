@@ -17,7 +17,7 @@ const DisplayCards = ({
 
   const handleNavigate = (card) => {
     console.log("Displaying Cards: ", card.priceTag);
-    navigate(`/card-details/${card.id}`, { state: card });
+    navigate(`/card-details/${card.id}`, { state: { card, from } });
   };
   useEffect(() => {
     console.log("Re-render plz!");
@@ -29,7 +29,7 @@ const DisplayCards = ({
         {title} ({cards.length})
       </h1>
 
-      <div className="flex flex-wrap mt-[20px] gap-[26px]">
+      <div className="flex flex-wrap mt-[20px] gap-[26px] max-md:justify-center">
         {isLoading && (
           <img
             src={loader}
@@ -40,7 +40,11 @@ const DisplayCards = ({
 
         {!isLoading && cards.length === 0 && (
           <p className="font-epilogue font-semibold text-[14px] leading-[30px] text-[#818183]">
-            There are no cards for sale at the moment 😓.
+            {from === "withdraw"
+              ? "None of your cards has been sold as of yet."
+              : from === "profile"
+              ? "You have no cards for sale."
+              : "There are no cards for sale at the moment 😓."}
           </p>
         )}
 

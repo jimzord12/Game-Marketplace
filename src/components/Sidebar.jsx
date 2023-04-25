@@ -54,7 +54,7 @@ const Sidebar = () => {
               />
               {link.name === "withdraw" && userSoldCards.length > 0 && (
                 <div
-                  className="relative w-4 h-4 z-10 text-xs font-bold text-white bg-[#E05e0c]  border-2 border-white rounded-full dark:border-gray-900 -top-[50px] -right-9"
+                  className="relative w-4 h-4 z-10 text-xs font-bold text-white bg-[#E05e0c] border-2 border-white rounded-full dark:border-gray-900 -top-[50px] -right-9"
                   key={`badge-${link.name}-${index}`}
                 ></div>
               )}

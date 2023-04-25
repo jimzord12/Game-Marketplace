@@ -26,6 +26,7 @@ const Profile = () => {
           title="Your Cards"
           isLoading={isLoadingAllCards}
           cards={playerCards}
+          from="profile"
         />
       )}
     </>

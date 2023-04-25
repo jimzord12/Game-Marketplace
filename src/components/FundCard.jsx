@@ -72,7 +72,7 @@ const FundCard = ({ card, handleClick, playerAvatar, from }) => {
       // }}
       className={`${hoverStyles} ${
         styles[cardRarity.text]
-      } w-[288px] rounded-[15px] bg-[#1c1c24]`}
+      } max-xs:w-[228px] w-[288px] rounded-[15px] bg-[#1c1c24]`}
       onClick={() =>
         from === "withdraw"
           ? console.log("(FundCard) - Do Nothing")

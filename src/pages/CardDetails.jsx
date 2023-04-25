@@ -88,19 +88,28 @@ const Message = ({
   setVisibility,
   text,
   type,
+  from,
   isLoading,
   handlerFunction,
   isTranSuccess,
   isTranError,
 }) => {
+  const [showCardRemoval, setShowCardRemoval] = useState(false);
+  const [compType, setCompType] = useState(type);
   const getStyles = () => {
-    if (type === "verify") return { bg: "bg-[#13131a]", margin: "mt-4" };
-    if (type === "success") return { bg: "bg-[#80d266]", margin: "mt-0" };
-    if (type === "failed") return { bg: "bg-[#cf4f54]", margin: "mt-0" };
+    if (compType === "verify") return { bg: "bg-[#13131a]", margin: "mt-4" };
+    if (compType === "remove-card")
+      return { bg: "bg-[#13131a]", margin: "mt-4" };
+    if (compType === "success") return { bg: "bg-[#80d266]", margin: "mt-0" };
+    if (compType === "failed") return { bg: "bg-[#cf4f54]", margin: "mt-0" };
   };
 
-  const styles = getStyles();
+  useEffect(() => {
+    if (showCardRemoval) setCompType("success");
+  }, [showCardRemoval]);
 
+  const styles = getStyles();
+  console.log("YYYYYYL: ", compType);
   return (
     <div
       className={`${
@@ -119,38 +128,55 @@ const Message = ({
         </div>
       ) : (
         <div className={`mb-4 p-4 ${styles.bg} rounded-[10px]`}>
-          {!isTranSuccess && !isTranError && type === "verify" && (
-            <h4 className="font-epilogue font-semibold text-[16px] leading-[22px] text-center text-white">
-              {text}
-              {/* Are you certain you wish you complete this transaction? */}
-            </h4>
-          )}
-          <div className={`flex justify-around gap-4 ${styles.margin}`}>
-            {!isTranSuccess && !isTranError && type === "verify" && (
-              <>
-                <CustomButton
-                  btnType="button"
-                  title="Yes"
-                  styles="w-[100px] bg-[#42ab21]"
-                  handleClick={handlerFunction}
-                />
-                <CustomButton
-                  btnType="button"
-                  title="No"
-                  styles="w-[100px] bg-[#b30019]"
-                  handleClick={() => setVisibility(false)}
-                />
-              </>
-            )}
-            {isTranSuccess && (
-              <h4 className="font-epilogue font-semibold text-[18px] text-white text-center">
-                You successfully purchased the Card!
+          {!isTranSuccess &&
+            !isTranError &&
+            compType === "verify" &&
+            !showCardRemoval && (
+              <h4 className="font-epilogue font-semibold text-[16px] leading-[22px] text-center text-white">
+                {text}
+                {/* Are you certain you wish you complete this transaction? */}
               </h4>
             )}
-            {isTranError && (
-              <h4 className="font-epilogue font-semibold text-[18px] text-white text-center">
-                Something went wrong with the transaction. Please try again
-                later
+          <div
+            className={`flex justify-around gap-4 ${styles.margin} rounded-[10px]`}
+          >
+            {!showCardRemoval && (
+              <>
+                {!isTranSuccess && !isTranError && compType === "verify" && (
+                  <>
+                    <CustomButton
+                      btnType="button"
+                      title="Yes"
+                      styles="w-[100px] bg-[#42ab21]"
+                      handleClick={() => {
+                        if (from === "profile") setShowCardRemoval(true);
+                        handlerFunction();
+                      }}
+                    />
+                    <CustomButton
+                      btnType="button"
+                      title="No"
+                      styles="w-[100px] bg-[#b30019]"
+                      handleClick={() => setVisibility(false)}
+                    />
+                  </>
+                )}
+                {isTranSuccess && (
+                  <h4 className="font-epilogue font-semibold text-[18px] text-white text-center">
+                    Your transaction was successfully executed!
+                  </h4>
+                )}
+                {isTranError && (
+                  <h4 className="font-epilogue font-semibold text-[18px] text-white text-center">
+                    Something went wrong with the transaction. Please try again
+                    later
+                  </h4>
+                )}
+              </>
+            )}
+            {showCardRemoval && (
+              <h4 className="bg-[#80d266] font-epilogue font-semibold text-[18px] text-white text-center">
+                Your Card was successfully returned to your inventory!
               </h4>
             )}
           </div>
@@ -165,7 +191,11 @@ const Message = ({
 // );
 
 const CardDetails = () => {
-  const { state } = useLocation(); // Card's Data
+  const { state: locationState } = useLocation(); // Card's Data
+  // const q = useLocation(); // Card's Data
+
+  console.log("ADDDDDFF: ", locationState);
+  const state = locationState.card;
   const navigate = useNavigate();
   const {
     playersMapping,
@@ -177,6 +207,7 @@ const CardDetails = () => {
     playerBalance,
     setPlayerBalance,
     refetchSoldCards,
+    setIsActive,
   } = useStateContext();
   console.log("1 - State: ", state);
   const [isLoading, setIsLoading] = useState(false);
@@ -198,6 +229,7 @@ const CardDetails = () => {
 
   const cardDetails = cardInfo[state.templateId];
   const owner = playersMapping[state.ownerId];
+  const redirectedFrom = locationState.from;
 
   const {
     isSuccess: isTranSuccess,
@@ -231,7 +263,7 @@ const CardDetails = () => {
         refetch();
         navigate("/");
         smoothScrollTo(0, 500);
-      }, 3000);
+      }, 3500);
     },
     onError: (error) => {
       console.log("--- FAILED ---- Created Purchase (Marketplace): ", error);
@@ -290,6 +322,17 @@ const CardDetails = () => {
 
   const handlePurchase = () => {
     setBeginTransaction(true);
+  };
+
+  const handleCardRemoval = () => {
+    removeFromMP({ axiosPrivate, cardId: selectedCard.id });
+    setTimeout(() => {
+      setIsActive("dashboard");
+      refetchSoldCards();
+      refetch();
+      navigate("/");
+      smoothScrollTo(0, 500);
+    }, 4000);
   };
 
   return (
@@ -456,70 +499,92 @@ const CardDetails = () => {
               </div>
             </div>
 
-            <h4 className="font-epilogue font-semibold text-[18px] text-white uppercase">
-              Purchase
-            </h4>
+            <>
+              <h4 className="font-epilogue font-semibold text-[18px] text-white uppercase">
+                {redirectedFrom === "profile" ? "Cancel Sale" : "Purchase"}
+              </h4>
 
-            {playerBalance && (
-              <div className="mt-[20px] flex flex-col p-4 bg-[#1c1c24] rounded-[10px]">
-                <div className="flex justify-between">
-                  <p className="font-epilogue font-medium text-[16px] leading-[30px] text-left text-[#808191]">
-                    Current Balance:
-                  </p>
-                  <p className="font-epilogue font-medium text-[18px] leading-[30px] text-right text-white">
-                    {numberWithDots(playerBalance)}
-                  </p>
-                </div>
-                <div className="flex justify-between border-solid border-b-2 border-gray-400 pb-1">
-                  <p className="font-epilogue font-medium text-[16px] leading-[30px] text-left text-[#808191]">
-                    Card's Price:
-                  </p>
-                  <p className="font-epilogue font-medium text-[18px] leading-[30px] text-right text-white">
-                    {`-${numberWithDots(selectedCard.priceTag)}`}
-                  </p>
-                </div>
-                <div className="flex justify-between mt-2 mb-4">
-                  <p className="font-epilogue font-medium text-[16px] leading-[30px] text-left text-[#808191] text-justify">
-                    New Balance:
-                  </p>
-                  <p className="font-epilogue font-medium text-[18px] leading-[30px] text-right text-white text-justify">
-                    <span
-                      style={{
-                        color: canBuy ? "" : "red",
+              {playerBalance && (
+                <div className="mt-[20px] flex flex-col p-4 bg-[#1c1c24] rounded-[10px]">
+                  {redirectedFrom === "profile" ? null : (
+                    <div className="flex justify-between">
+                      <p className="font-epilogue font-medium text-[16px] leading-[30px] text-left text-[#808191]">
+                        Current Balance:
+                      </p>
+                      <p className="font-epilogue font-medium text-[18px] leading-[30px] text-right text-white">
+                        {numberWithDots(playerBalance)}
+                      </p>
+                    </div>
+                  )}
+                  {redirectedFrom === "profile" ? null : (
+                    <div className="flex justify-between border-solid border-b-2 border-gray-400 pb-1">
+                      <p className="font-epilogue font-medium text-[16px] leading-[30px] text-left text-[#808191]">
+                        Card's Price:
+                      </p>
+                      <p className="font-epilogue font-medium text-[18px] leading-[30px] text-right text-white">
+                        {`-${numberWithDots(selectedCard.priceTag)}`}
+                      </p>
+                    </div>
+                  )}
+
+                  {redirectedFrom === "profile" ? null : (
+                    <div className="flex justify-between mt-2 mb-4">
+                      <p className="font-epilogue font-medium text-[16px] leading-[30px] text-left text-[#808191] text-justify">
+                        New Balance:
+                      </p>
+                      <p className="font-epilogue font-medium text-[18px] leading-[30px] text-right text-white text-justify">
+                        <span
+                          style={{
+                            color: canBuy ? "" : "red",
+                          }}
+                        >
+                          {numberWithDots(
+                            playerBalance - selectedCard.priceTag
+                          )}
+                        </span>
+                      </p>
+                    </div>
+                  )}
+
+                  <div className="mt-[0px]">
+                    <Message
+                      isVisible={showTranMsg}
+                      setVisibility={setShowTranMsg}
+                      isLoading={isTranLoading}
+                      isTranSuccess={isTranSuccess}
+                      isTranError={isTranError}
+                      type={tranType}
+                      from="profile"
+                      text="Are you certain you wish you complete this transaction?"
+                      handlerFunction={
+                        redirectedFrom === "profile"
+                          ? handleCardRemoval
+                          : handlePurchase
+                      }
+                    />
+
+                    <CustomButton
+                      btnType="button"
+                      title={
+                        redirectedFrom === "profile"
+                          ? "Remove Card"
+                          : canBuy
+                          ? "Buy Card"
+                          : "Can't Buy Card"
+                      }
+                      styles="w-full bg-[#8c6dfd]"
+                      disabled={redirectedFrom === "profile" ? false : !canBuy}
+                      handleClick={() => {
+                        setShowTranMsg(true);
+                        console.log("The JS Card: ", selectedCard);
+                        // if (showConfirmation && confirmationRef.current) {
+                        // }
                       }}
-                    >
-                      {numberWithDots(playerBalance - selectedCard.priceTag)}
-                    </span>
-                  </p>
+                    />
+                  </div>
                 </div>
-
-                <div className="mt-[0px]">
-                  <Message
-                    isVisible={showTranMsg}
-                    setVisibility={setShowTranMsg}
-                    isLoading={isTranLoading}
-                    isTranSuccess={isTranSuccess}
-                    isTranError={isTranError}
-                    type={tranType}
-                    text="Are you certain you wish you complete this transaction?"
-                    handlerFunction={handlePurchase}
-                  />
-
-                  <CustomButton
-                    btnType="button"
-                    title={canBuy ? "Buy Card" : "Can't Buy Card"}
-                    styles="w-full bg-[#8c6dfd]"
-                    disabled={!canBuy}
-                    handleClick={() => {
-                      setShowTranMsg(true);
-                      console.log("The JS Card: ", selectedCard);
-                      // if (showConfirmation && confirmationRef.current) {
-                      // }
-                    }}
-                  />
-                </div>
-              </div>
-            )}
+              )}
+            </>
           </div>
         </div>
       )}
