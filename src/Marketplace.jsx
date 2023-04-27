@@ -4,7 +4,7 @@ import { Route, Routes } from "react-router-dom";
 import { Sidebar, Navbar } from "./components";
 import { CardDetails, CreateCampaign, Home, Profile, Withdraw } from "./pages";
 
-const App = () => {
+const Marketplace = () => {
   return (
     <div className="relative sm:-8 p-4 bg-[#13131a] min-h-screen flex flex-row">
       <div className="sm:flex hidden mr-10 relative">
@@ -26,4 +26,4 @@ const App = () => {
   );
 };
 
-export default App;
+export default Marketplace;

@@ -7,7 +7,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 // import { Goerli } from "@thirdweb-dev/chains";
 import { AuthProvider } from "./context/AuthProvider";
 import { StateContextProvider } from "./context";
-import App from "./App";
+import Marketplace from "./Marketplace";
 import "./index.css";
 
 const queryClient = new QueryClient();
@@ -20,7 +20,7 @@ root.render(
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <StateContextProvider>
-          <App />
+          <Marketplace />
         </StateContextProvider>
       </AuthProvider>
     </QueryClientProvider>
